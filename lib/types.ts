@@ -11,6 +11,10 @@ export interface User {
   userType: UserType;
   teacherId?: string;
   studentId?: string;
+  // Account lockout fields
+  failedLoginAttempts?: number;
+  lockedUntil?: Date;
+  lastFailedLogin?: Date;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -42,6 +46,9 @@ export interface Assignment {
   allowEdit: boolean; // อนุญาตให้นักเรียนแก้ไขงานที่ส่งแล้ว
   createdAt: Date;
   updatedAt: Date;
+  // Notification tracking
+  viewedBy?: ObjectId[]; // นักเรียนที่ดูงานแล้ว
+  lastViewedAt?: Date; // เวลาที่ดูล่าสุด
 }
 
 export interface Submission {
@@ -149,5 +156,27 @@ export interface StudentGradeSummary {
   finalPercentage: number;
   finalGrade: string; // A, B+, B, C+, C, D+, D, F
   lastUpdated: Date;
+}
+
+export interface NotificationStatus {
+  studentId: ObjectId;
+  assignmentId: ObjectId;
+  classId: ObjectId;
+  status: 'new' | 'viewed' | 'submitted'; // สถานะการแจ้งเตือน
+  viewedAt?: Date; // เวลาที่ดูงาน
+  submittedAt?: Date; // เวลาที่ส่งงาน
+  lastNotificationAt?: Date; // เวลาที่แจ้งเตือนล่าสุด
+}
+
+export interface SmartNotification {
+  assignmentId: ObjectId;
+  assignmentTitle: string;
+  className: string;
+  teacherName: string;
+  dueDate: Date;
+  status: 'new' | 'pending' | 'submitted';
+  message: string;
+  priority: 'high' | 'medium' | 'low';
+  createdAt: Date;
 }
 

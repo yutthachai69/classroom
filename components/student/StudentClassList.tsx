@@ -40,6 +40,7 @@ export default function StudentClassList({ userId, onNavigateToAssignments }: St
   const [classes, setClasses] = useState<ClassWithAssignments[]>([]);
   const [loading, setLoading] = useState(true);
   const [showJoinModal, setShowJoinModal] = useState(false);
+  const [notificationStatuses, setNotificationStatuses] = useState<Map<string, string>>(new Map());
 
   useEffect(() => {
     fetchClasses();
@@ -51,6 +52,18 @@ export default function StudentClassList({ userId, onNavigateToAssignments }: St
       const data = await response.json();
       const classesData = data.classes || [];
 
+      // ดึง notification status
+      const notificationsRes = await fetch('/api/notifications');
+      const notificationsData = await notificationsRes.json();
+      
+      let statusMap = new Map<string, string>();
+      if (notificationsData.success) {
+        notificationsData.data.notifications.forEach((notif: any) => {
+          statusMap.set(notif.assignmentId, notif.status);
+        });
+        setNotificationStatuses(statusMap);
+      }
+
       // Fetch assignments for each class to count new assignments
       const classesWithAssignments = await Promise.all(
         classesData.map(async (cls: Class) => {
@@ -59,13 +72,11 @@ export default function StudentClassList({ userId, onNavigateToAssignments }: St
             const assignmentsData = await assignmentsResponse.json();
             const assignments = assignmentsData.assignments || [];
 
-            // Count assignments created in the last 7 days as "new"
-            const sevenDaysAgo = new Date();
-            sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
-            
-            const newAssignmentsCount = assignments.filter((assignment: Assignment) => 
-              new Date(assignment.createdAt) > sevenDaysAgo
-            ).length;
+            // นับงานใหม่จาก notification status แทนวันที่สร้าง
+            const newAssignmentsCount = assignments.filter((assignment: Assignment) => {
+              const status = statusMap.get(assignment._id);
+              return status === 'new';
+            }).length;
 
             return {
               ...cls,

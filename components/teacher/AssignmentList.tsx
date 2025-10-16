@@ -7,7 +7,7 @@ import Modal from '@/components/common/Modal';
 import Input from '@/components/common/Input';
 import LoadingSpinner from '@/components/common/LoadingSpinner';
 import { PlusCircle, Calendar, FileText, CheckCircle, ClipboardCheck, Users, Lock, Unlock, Filter, ArrowLeft, Edit } from 'lucide-react';
-import { formatDate, formatDateTime } from '@/lib/utils';
+import { formatDateTime } from '@/lib/utils';
 import Swal from 'sweetalert2';
 import GradeAssignmentModal from './GradeAssignmentModal';
 
@@ -20,6 +20,7 @@ interface Assignment {
   dueDate: string;
   points: number;
   gradeCategoryName?: string;
+  gradeCategoryId?: string;
   allowEdit: boolean;
   createdAt: string;
 }
@@ -86,7 +87,7 @@ export default function AssignmentList({
 
   useEffect(() => {
     fetchData();
-  }, [userId]);
+  }, [userId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     // Set initial class filter from props
@@ -124,14 +125,22 @@ export default function AssignmentList({
       const statsEntries = await Promise.all(
         list.map(async (a) => {
           try {
+            // ดึงข้อมูล submissions
             const res = await fetch(`/api/submissions?assignmentId=${a._id}`);
             const data = await res.json();
             const subs: Submission[] = data.submissions || [];
             const total = subs.length;
-            const graded = subs.filter(s => typeof s.grade !== 'undefined').length;
+
+            // ดึงข้อมูล grades จาก assignmentGrades collection
+            const gradesRes = await fetch(`/api/grades?assignmentId=${a._id}`);
+            const gradesData = await gradesRes.json();
+            const grades = gradesData.grades || [];
+            const graded = grades.length;
             const pending = total - graded;
+
             return [a._id, { total, graded, pending }] as const;
           } catch (e) {
+            console.error(`Failed to fetch stats for assignment ${a._id}:`, e);
             return [a._id, { total: 0, graded: 0, pending: 0 }] as const;
           }
         })
@@ -284,7 +293,15 @@ export default function AssignmentList({
   const handleGradeSubmit = async (submissionId: string, grade: number, feedback: string) => {
     try {
       const submission = submissions.find(s => s._id === submissionId);
-      const requestData = {
+      const requestData: {
+        assignmentId: string | undefined;
+        studentId: string | undefined;
+        points: number;
+        maxPoints: number;
+        feedback: string;
+        gradedBy: string;
+        gradeCategoryId?: string;
+      } = {
         assignmentId: selectedAssignment?._id,
         studentId: submission?.studentId,
         points: grade,
@@ -311,6 +328,9 @@ export default function AssignmentList({
       if (!response.ok) {
         throw new Error(data.error || 'Failed to save grade');
       }
+
+      // Refresh data after successful grading
+      await fetchData();
     } catch (error) {
       console.error('Failed to save grade:', error);
       throw error;

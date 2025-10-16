@@ -16,7 +16,7 @@ export async function GET(request: NextRequest) {
 
     if (teacherId) {
       query.teacherId = new ObjectId(teacherId);
-    } else if (studentId) {
+    } else if (studentId && studentId !== 'undefined') {
       query.students = new ObjectId(studentId);
     }
 

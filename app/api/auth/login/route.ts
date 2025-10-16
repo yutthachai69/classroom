@@ -2,17 +2,53 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getDatabase } from '@/lib/mongodb';
 import { verifyPassword } from '@/lib/utils';
 import { User } from '@/lib/types';
+import { generateToken } from '@/lib/auth';
+import { validateData, loginSchema, sanitizeInput } from '@/lib/validation';
+import { loginRateLimit } from '@/lib/rate-limit';
+import { logAuthEvent } from '@/lib/logger';
+import { checkAccountLockout, handleFailedLogin, handleSuccessfulLogin } from '@/lib/account-lockout';
 
 export async function POST(request: NextRequest) {
   try {
-    const { username, password, userType } = await request.json();
+    // Rate limiting
+    const rateLimitResponse = loginRateLimit(request);
+    if (rateLimitResponse) {
+      return rateLimitResponse;
+    }
+
+    const rawData = await request.json();
+    
+    // Sanitize input
+    const sanitizedData = sanitizeInput(rawData);
+    
+    // Validate input
+    const validation = validateData(loginSchema, sanitizedData);
+    if (!validation.isValid) {
+      logAuthEvent('failed_login', {
+        reason: 'validation_failed',
+        errors: validation.errors,
+        ip: request.ip || 'unknown'
+      });
+      
+      return NextResponse.json(
+        { error: validation.errors?.join(', ') },
+        { status: 400 }
+      );
+    }
+
+    const { username, password, userType } = validation.data;
     
     console.log('Login attempt:', { username, userType });
 
-    if (!username || !password || !userType) {
+    // ตรวจสอบว่าบัญชีถูกล็อคหรือไม่
+    const lockoutCheck = await checkAccountLockout(username);
+    if (lockoutCheck.isLocked) {
       return NextResponse.json(
-        { error: 'กรุณากรอกข้อมูลให้ครบถ้วน' },
-        { status: 400 }
+        { 
+          error: lockoutCheck.message,
+          lockoutTime: lockoutCheck.lockoutTime
+        },
+        { status: 423 } // 423 Locked
       );
     }
 
@@ -26,6 +62,17 @@ export async function POST(request: NextRequest) {
 
     if (!user) {
       console.log('No user found with username:', username, 'userType:', userType);
+      
+      // บันทึก failed login attempt
+      await handleFailedLogin(username);
+      
+      logAuthEvent('failed_login', {
+        username,
+        userType,
+        reason: 'user_not_found',
+        ip: request.ip || 'unknown'
+      });
+      
       return NextResponse.json(
         { error: 'ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง' },
         { status: 401 }
@@ -35,15 +82,39 @@ export async function POST(request: NextRequest) {
     const isValidPassword = await verifyPassword(password, user.password);
 
     if (!isValidPassword) {
+      // บันทึก failed login attempt
+      await handleFailedLogin(username);
+      
+      logAuthEvent('failed_login', {
+        username,
+        userType,
+        reason: 'invalid_password',
+        ip: request.ip || 'unknown'
+      });
+      
       return NextResponse.json(
         { error: 'ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง' },
         { status: 401 }
       );
     }
 
-    // Return user data without password
+    // Login สำเร็จ - รีเซ็ต failed attempts
+    await handleSuccessfulLogin(username);
+
+    // Generate JWT token
+    const token = generateToken(user);
+    
+    // Log successful login
+    logAuthEvent('login', {
+      username,
+      userType,
+      userId: user._id?.toString(),
+      ip: request.ip || 'unknown'
+    });
+
+    // Return user data without password and token
     const { password: _, ...userData } = user;
-    return NextResponse.json({
+    const response = NextResponse.json({
       user: {
         id: user._id?.toString(),
         username: user.username,
@@ -53,7 +124,18 @@ export async function POST(request: NextRequest) {
         teacherId: user.teacherId,
         studentId: user.studentId,
       },
+      token
     });
+
+    // Set httpOnly cookie for token
+    response.cookies.set('auth-token', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+      maxAge: 24 * 60 * 60 // 24 hours
+    });
+
+    return response;
   } catch (error) {
     console.error('Login error:', error);
     return NextResponse.json(

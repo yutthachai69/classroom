@@ -4,15 +4,16 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useApp } from '@/context/AppContext';
 import LoadingSpinner from '@/components/common/LoadingSpinner';
-import { BookOpen, FileText, Bell, LogOut, BarChart3 } from 'lucide-react';
+import { BookOpen, FileText, Bell, LogOut, BarChart3, Users } from 'lucide-react';
 import Button from '@/components/common/Button';
 import Swal from 'sweetalert2';
 import StudentClassList from '@/components/student/StudentClassList';
 import StudentAssignmentList from '@/components/student/StudentAssignmentList';
 import StudentAnnouncementList from '@/components/student/StudentAnnouncementList';
 import StudentGradePortal from '@/components/student/StudentGradePortal';
+import ClassRoster from '@/components/common/ClassRoster';
 
-type TabType = 'classes' | 'assignments' | 'announcements' | 'grades';
+type TabType = 'classes' | 'assignments' | 'announcements' | 'grades' | 'roster';
 
 export default function StudentDashboard() {
   const router = useRouter();
@@ -127,6 +128,17 @@ export default function StudentDashboard() {
               <BarChart3 size={20} />
               คะแนน
             </button>
+            <button
+              onClick={() => setActiveTab('roster')}
+              className={`py-4 px-3 border-b-2 font-medium text-sm flex items-center gap-2 ${
+                activeTab === 'roster'
+                  ? 'border-green-500 text-green-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              }`}
+            >
+              <Users size={20} />
+              เพื่อนร่วมชั้น
+            </button>
           </nav>
         </div>
       </div>
@@ -152,6 +164,40 @@ export default function StudentDashboard() {
         )}
         {activeTab === 'announcements' && <StudentAnnouncementList userId={user.id} />}
         {activeTab === 'grades' && <StudentGradePortal userId={user.id} />}
+        {activeTab === 'roster' && selectedClassId && selectedClassName && (
+          <div className="space-y-8">
+            <div className="bg-gradient-to-r from-purple-50 to-blue-50 p-6 rounded-lg border border-purple-200">
+              <div className="flex items-center space-x-3 mb-4">
+                <div className="bg-purple-100 p-2 rounded-lg">
+                  <Users className="h-6 w-6 text-purple-600" />
+                </div>
+                <div>
+                  <h2 className="text-xl font-semibold text-gray-900">เพื่อนร่วมชั้น</h2>
+                  <p className="text-sm text-gray-600">ดูรายชื่อเพื่อนร่วมชั้นและครูผู้สอน</p>
+                </div>
+              </div>
+              <ClassRoster 
+                classId={selectedClassId}
+                className={selectedClassName}
+                userType="student"
+                userId={user.id}
+              />
+            </div>
+          </div>
+        )}
+        {activeTab === 'roster' && !selectedClassId && (
+          <div className="text-center py-12">
+            <Users className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+            <h3 className="text-lg font-medium text-gray-900 mb-2">เลือกคลาสเพื่อดูเพื่อนร่วมชั้น</h3>
+            <p className="text-gray-600 mb-4">กรุณาเลือกคลาสจากแท็บ "คลาสเรียน" เพื่อดูเพื่อนร่วมชั้น</p>
+            <Button
+              variant="primary"
+              onClick={() => setActiveTab('classes')}
+            >
+              ไปที่คลาสเรียน
+            </Button>
+          </div>
+        )}
       </main>
     </div>
   );

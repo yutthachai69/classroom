@@ -19,33 +19,54 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [isInitializing, setIsInitializing] = useState(true);
 
   useEffect(() => {
+    // ตรวจสอบสถานะการล็อกอินจาก server
+    const checkAuthStatus = async () => {
+      try {
+        const response = await fetch('/api/auth/me', {
+          method: 'GET',
+          credentials: 'include', // ส่ง cookies
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          if (data.success && data.user) {
+            setUser(data.user);
+          }
+        }
+      } catch (error) {
+        console.error('Failed to check auth status:', error);
+      } finally {
+        setLoading(false);
+        setIsInitializing(false);
+      }
+    };
+
     // Simulate loading like the old system
     const timer = setTimeout(() => {
-      // Load user from localStorage on mount
-      const storedUser = localStorage.getItem('user');
-      if (storedUser) {
-        try {
-          setUser(JSON.parse(storedUser));
-        } catch (error) {
-          console.error('Failed to parse stored user:', error);
-          localStorage.removeItem('user');
-        }
-      }
-      setLoading(false);
-      setIsInitializing(false);
+      checkAuthStatus();
     }, 1500);
 
     return () => clearTimeout(timer);
   }, []);
 
-  const login = (userData: AuthUser) => {
+  const login = (userData: AuthUser, token: string) => {
     setUser(userData);
-    localStorage.setItem('user', JSON.stringify(userData));
+    // Token จะถูกตั้งค่าเป็น httpOnly cookie โดย server แล้ว
+    // ไม่ต้องจัดการ cookie ที่นี่
   };
 
-  const logout = () => {
-    setUser(null);
-    localStorage.removeItem('user');
+  const logout = async () => {
+    try {
+      // เรียก API logout เพื่อลบ cookie
+      await fetch('/api/auth/logout', {
+        method: 'POST',
+        credentials: 'include',
+      });
+    } catch (error) {
+      console.error('Logout API error:', error);
+    } finally {
+      setUser(null);
+    }
   };
 
   const isAuthenticated = !!user;

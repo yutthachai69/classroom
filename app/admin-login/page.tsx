@@ -5,25 +5,24 @@ import { useRouter } from 'next/navigation';
 import { useApp } from '@/context/AppContext';
 import Button from '@/components/common/Button';
 import Input from '@/components/common/Input';
-import { Shield, LogIn } from 'lucide-react';
-import Swal from 'sweetalert2';
+import { Shield, LogIn, Eye, EyeOff } from 'lucide-react';
+import { useAlert } from '@/lib/useAlert';
+import Modal from '@/components/common/Modal';
 
 export default function AdminLoginPage() {
   const router = useRouter();
   const { login } = useApp();
+  const { alert, success, error } = useAlert();
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!username || !password) {
-      Swal.fire({
-        icon: 'error',
-        title: 'เกิดข้อผิดพลาด',
-        text: 'กรุณากรอกข้อมูลให้ครบถ้วน',
-      });
+      error('เกิดข้อผิดพลาด', 'กรุณากรอกข้อมูลให้ครบถ้วน');
       return;
     }
 
@@ -39,33 +38,19 @@ export default function AdminLoginPage() {
       const data = await response.json();
 
       if (response.ok) {
-        login(data.user);
+        login(data.user, ''); // ไม่ต้องส่ง token เพราะ server จะตั้งค่า cookie แล้ว
         
-        Swal.fire({
-          icon: 'success',
-          title: 'เข้าสู่ระบบสำเร็จ',
-          text: `ยินดีต้อนรับ ${data.user.firstName} ${data.user.lastName}`,
-          timer: 1500,
-          showConfirmButton: false,
-        });
+        success('เข้าสู่ระบบสำเร็จ', `ยินดีต้อนรับ ${data.user.firstName} ${data.user.lastName}`);
 
         setTimeout(() => {
           router.push('/admin');
         }, 1500);
       } else {
-        Swal.fire({
-          icon: 'error',
-          title: 'เกิดข้อผิดพลาด',
-          text: data.error || 'ไม่สามารถเข้าสู่ระบบได้',
-        });
+        error('เกิดข้อผิดพลาด', data.error || 'ไม่สามารถเข้าสู่ระบบได้');
       }
     } catch (error) {
       console.error('Login error:', error);
-      Swal.fire({
-        icon: 'error',
-        title: 'เกิดข้อผิดพลาด',
-        text: 'ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์ได้',
-      });
+      error('เกิดข้อผิดพลาด', 'ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์ได้');
     } finally {
       setLoading(false);
     }
@@ -88,7 +73,11 @@ export default function AdminLoginPage() {
         </div>
 
         {/* Login Form */}
-        <form onSubmit={handleSubmit} className="p-6 space-y-4">
+        <form onSubmit={handleSubmit} className="p-6 space-y-4" autoComplete="off">
+          {/* Hidden fields to prevent browser autofill */}
+          <input type="text" style={{ display: 'none' }} autoComplete="username" />
+          <input type="password" style={{ display: 'none' }} autoComplete="current-password" />
+          
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               ชื่อผู้ใช้ Admin
@@ -99,6 +88,10 @@ export default function AdminLoginPage() {
               onChange={(e) => setUsername(e.target.value)}
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent outline-none transition-all"
               placeholder="กรอกชื่อผู้ใช้ Admin"
+              autoComplete="off"
+              autoCorrect="off"
+              autoCapitalize="off"
+              spellCheck="false"
               required
             />
           </div>
@@ -107,14 +100,27 @@ export default function AdminLoginPage() {
             <label className="block text-sm font-medium text-gray-700 mb-2">
               รหัสผ่าน Admin
             </label>
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent outline-none transition-all"
-              placeholder="กรอกรหัสผ่าน Admin"
-              required
-            />
+            <div className="relative">
+              <input
+                type={showPassword ? 'text' : 'password'}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="w-full px-4 py-3 pr-12 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent outline-none transition-all"
+                placeholder="กรอกรหัสผ่าน Admin"
+                autoComplete="new-password"
+                autoCorrect="off"
+                autoCapitalize="off"
+                spellCheck="false"
+                required
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+              >
+                {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+              </button>
+            </div>
           </div>
 
           {/* Demo Credentials */}
@@ -171,6 +177,9 @@ export default function AdminLoginPage() {
           </button>
         </div>
       </div>
+      
+      {/* Modal Component */}
+      <Modal {...alert} />
     </div>
   );
 }

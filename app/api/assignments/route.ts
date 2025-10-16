@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getDatabase } from '@/lib/mongodb';
 import { ObjectId } from 'mongodb';
 import { Assignment, Class } from '@/lib/types';
+import { createNotificationForNewAssignment } from '@/lib/smart-notifications';
 
 // GET all assignments
 export async function GET(request: NextRequest) {
@@ -78,6 +79,9 @@ export async function POST(request: NextRequest) {
     const result = await db
       .collection<Assignment>('assignments')
       .insertOne(newAssignment as Assignment);
+
+    // สร้าง notification สำหรับงานใหม่
+    await createNotificationForNewAssignment(result.insertedId.toString(), classId);
 
     return NextResponse.json({
       message: 'สร้างงานสำเร็จ',

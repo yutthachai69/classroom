@@ -1,0 +1,10 @@
+User-agent: *
+Allow: /
+Allow: /login
+Allow: /admin-login
+Disallow: /admin
+Disallow: /teacher
+Disallow: /student
+Disallow: /api/
+
+Sitemap: https://your-domain.com/sitemap.xml

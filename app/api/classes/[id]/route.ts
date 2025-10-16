@@ -20,7 +20,40 @@ export async function GET(
       return NextResponse.json({ error: 'ไม่พบคลาส' }, { status: 404 });
     }
 
-    return NextResponse.json({ class: classData });
+    // Populate teacher details
+    const teacherDetails = await db
+      .collection('users')
+      .findOne({ 
+        _id: classData.teacherId,
+        userType: 'teacher'
+      });
+
+    // Populate student details
+    if (classData.students && classData.students.length > 0) {
+      const studentDetails = await db
+        .collection('users')
+        .find({ 
+          _id: { $in: classData.students.map((id: any) => new ObjectId(id)) },
+          userType: 'student'
+        })
+        .toArray();
+
+      const classWithDetails = {
+        ...classData,
+        teacherDetails,
+        studentDetails
+      };
+
+      return NextResponse.json({ class: classWithDetails });
+    }
+
+    return NextResponse.json({ 
+      class: { 
+        ...classData, 
+        teacherDetails,
+        studentDetails: [] 
+      } 
+    });
   } catch (error) {
     console.error('Get class error:', error);
     return NextResponse.json(

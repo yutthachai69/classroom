@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useApp } from '@/context/AppContext';
 import LoadingSpinner from '@/components/common/LoadingSpinner';
-import { BookOpen, FileText, Bell, LogOut, BarChart3 } from 'lucide-react';
+import { BookOpen, FileText, Bell, LogOut, BarChart3, Users } from 'lucide-react';
 import Button from '@/components/common/Button';
 import Card from '@/components/common/Card';
 import Swal from 'sweetalert2';
@@ -12,9 +12,9 @@ import ClassList from '@/components/teacher/ClassList';
 import AssignmentList from '@/components/teacher/AssignmentList';
 import AnnouncementList from '@/components/teacher/AnnouncementList';
 import GradeManagement from '@/components/teacher/GradeManagement';
-import Gradebook from '@/components/teacher/Gradebook';
+import ClassRoster from '@/components/common/ClassRoster';
 
-type TabType = 'classes' | 'assignments' | 'announcements' | 'grades';
+type TabType = 'classes' | 'assignments' | 'announcements' | 'grades' | 'roster';
 
 export default function TeacherDashboard() {
   const router = useRouter();
@@ -129,6 +129,17 @@ export default function TeacherDashboard() {
               <BarChart3 size={20} />
               คะแนน
             </button>
+            <button
+              onClick={() => setActiveTab('roster')}
+              className={`py-4 px-3 border-b-2 font-medium text-sm flex items-center gap-2 ${
+                activeTab === 'roster'
+                  ? 'border-green-500 text-green-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              }`}
+            >
+              <Users size={20} />
+              รายชื่อนักเรียน
+            </button>
           </nav>
         </div>
       </div>
@@ -155,8 +166,52 @@ export default function TeacherDashboard() {
         {activeTab === 'announcements' && <AnnouncementList userId={user.id} />}
         {activeTab === 'grades' && (
           <div className="space-y-8">
-            <GradeManagement userId={user.id} />
-            <Gradebook teacherId={user.id} />
+            <div className="bg-gradient-to-r from-blue-50 to-green-50 p-6 rounded-lg border border-blue-200">
+              <div className="flex items-center space-x-3 mb-4">
+                <div className="bg-blue-100 p-2 rounded-lg">
+                  <BarChart3 className="h-6 w-6 text-blue-600" />
+                </div>
+                <div>
+                  <h2 className="text-xl font-semibold text-gray-900">จัดการคะแนน</h2>
+                  <p className="text-sm text-gray-600">สร้างและจัดการโครงสร้างคะแนนสำหรับคลาสเรียน</p>
+                </div>
+              </div>
+              <GradeManagement userId={user.id} />
+            </div>
+          </div>
+        )}
+        {activeTab === 'roster' && selectedClassId && selectedClassName && (
+          <div className="space-y-8">
+            <div className="bg-gradient-to-r from-purple-50 to-blue-50 p-6 rounded-lg border border-purple-200">
+              <div className="flex items-center space-x-3 mb-4">
+                <div className="bg-purple-100 p-2 rounded-lg">
+                  <Users className="h-6 w-6 text-purple-600" />
+                </div>
+                <div>
+                  <h2 className="text-xl font-semibold text-gray-900">รายชื่อนักเรียน</h2>
+                  <p className="text-sm text-gray-600">ดูรายชื่อนักเรียนและครูผู้สอนในคลาส</p>
+                </div>
+              </div>
+              <ClassRoster 
+                classId={selectedClassId}
+                className={selectedClassName}
+                userType="teacher"
+                userId={user.id}
+              />
+            </div>
+          </div>
+        )}
+        {activeTab === 'roster' && !selectedClassId && (
+          <div className="text-center py-12">
+            <Users className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+            <h3 className="text-lg font-medium text-gray-900 mb-2">เลือกคลาสเพื่อดูรายชื่อนักเรียน</h3>
+            <p className="text-gray-600 mb-4">กรุณาเลือกคลาสจากแท็บ "คลาสเรียน" เพื่อดูรายชื่อนักเรียน</p>
+            <Button
+              variant="primary"
+              onClick={() => setActiveTab('classes')}
+            >
+              ไปที่คลาสเรียน
+            </Button>
           </div>
         )}
       </main>

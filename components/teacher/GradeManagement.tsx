@@ -6,8 +6,9 @@ import Card from '@/components/common/Card';
 import Modal from '@/components/common/Modal';
 import Input from '@/components/common/Input';
 import LoadingSpinner from '@/components/common/LoadingSpinner';
-import { PlusCircle, Settings, BarChart3, Users, Calculator } from 'lucide-react';
+import { PlusCircle, Settings, BarChart3, Users, Calculator, BookOpen, Eye } from 'lucide-react';
 import Swal from 'sweetalert2';
+import GradebookModal from './GradebookModal';
 
 interface GradeCategory {
   _id?: string;
@@ -22,6 +23,8 @@ interface GradeStructure {
   _id: string;
   name: string;
   description?: string;
+  classId: string;
+  className: string;
   totalPoints: number;
   categories: GradeCategory[];
   isActive: boolean;
@@ -44,6 +47,8 @@ export default function GradeManagement({ userId }: GradeManagementProps) {
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isGradebookModalOpen, setIsGradebookModalOpen] = useState(false);
+  const [selectedStructure, setSelectedStructure] = useState<GradeStructure | null>(null);
   const [editingStructure, setEditingStructure] = useState<GradeStructure | null>(null);
   const [selectedClass, setSelectedClass] = useState<string>('');
   const [formData, setFormData] = useState({
@@ -256,6 +261,11 @@ export default function GradeManagement({ userId }: GradeManagementProps) {
     }
   };
 
+  const handleStructureClick = (structure: GradeStructure) => {
+    setSelectedStructure(structure);
+    setIsGradebookModalOpen(true);
+  };
+
   const resetForm = () => {
     setFormData({ name: '', description: '', totalPoints: 100 });
     setCategories([
@@ -288,6 +298,23 @@ export default function GradeManagement({ userId }: GradeManagementProps) {
         </Button>
       </div>
 
+      {/* Instructions */}
+      {gradeStructures.length > 0 && (
+        <Card className="p-4 bg-blue-50 border-blue-200">
+          <div className="flex items-start space-x-3">
+            <div className="bg-blue-100 p-2 rounded-lg">
+              <Eye className="h-5 w-5 text-blue-600" />
+            </div>
+            <div>
+              <h3 className="font-semibold text-blue-900 mb-1">วิธีดูคะแนนนักเรียน</h3>
+              <p className="text-sm text-blue-800">
+                คลิกที่การ์ดโครงสร้างคะแนนหรือปุ่ม <strong>"ดูคะแนน"</strong> เพื่อเปิดสมุดบันทึกคะแนนของคลาสนั้น
+              </p>
+            </div>
+          </div>
+        </Card>
+      )}
+
       {gradeStructures.length === 0 ? (
         <Card>
           <div className="text-center py-12">
@@ -303,10 +330,10 @@ export default function GradeManagement({ userId }: GradeManagementProps) {
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {gradeStructures.map((structure) => (
-            <Card key={structure._id} hover>
+            <Card key={structure._id} hover className="cursor-pointer" onClick={() => handleStructureClick(structure)}>
               <div className="space-y-4">
                 <div className="flex items-start justify-between">
-                  <div>
+                  <div className="flex-1">
                     <h3 className="text-lg font-semibold text-gray-900">{structure.name}</h3>
                     <p className="text-sm text-gray-600">{structure.description}</p>
                     <div className="flex items-center gap-2 mt-2">
@@ -317,6 +344,17 @@ export default function GradeManagement({ userId }: GradeManagementProps) {
                       }`}>
                         {structure.isActive ? 'ใช้งานอยู่' : 'ไม่ใช้งาน'}
                       </span>
+                      <span className="px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                        {structure.className}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="ml-4 flex items-center space-x-2">
+                    <div className="bg-blue-100 p-2 rounded-lg">
+                      <BookOpen className="h-5 w-5 text-blue-600" />
+                    </div>
+                    <div className="bg-green-100 p-2 rounded-lg">
+                      <Eye className="h-5 w-5 text-green-600" />
                     </div>
                   </div>
                 </div>
@@ -341,7 +379,16 @@ export default function GradeManagement({ userId }: GradeManagementProps) {
                     <BarChart3 size={16} />
                     <span>คะแนนเต็ม: {structure.totalPoints}</span>
                   </div>
-                  <div className="flex gap-2">
+                  <div className="flex gap-2" onClick={(e) => e.stopPropagation()}>
+                    <Button 
+                      variant="primary" 
+                      size="sm"
+                      onClick={() => handleStructureClick(structure)}
+                      className="flex items-center space-x-1"
+                    >
+                      <Eye size={16} />
+                      <span>ดูคะแนน</span>
+                    </Button>
                     <Button 
                       variant="secondary" 
                       size="sm"
@@ -655,6 +702,13 @@ export default function GradeManagement({ userId }: GradeManagementProps) {
           </div>
         </form>
       </Modal>
+
+      {/* Gradebook Modal */}
+      <GradebookModal
+        isOpen={isGradebookModalOpen}
+        onClose={() => setIsGradebookModalOpen(false)}
+        gradeStructure={selectedStructure}
+      />
     </div>
   );
 }

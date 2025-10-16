@@ -6,25 +6,24 @@ import { useApp } from '@/context/AppContext';
 import Button from '@/components/common/Button';
 import Input from '@/components/common/Input';
 import { BookOpen, LogIn, User, GraduationCap, Eye, EyeOff, Shield } from 'lucide-react';
-import Swal from 'sweetalert2';
+import { useAlert } from '@/lib/useAlert';
+import Modal from '@/components/common/Modal';
 
 export default function LoginPage() {
   const router = useRouter();
   const { login } = useApp();
+  const { alert, success, error } = useAlert();
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [userType, setUserType] = useState<'teacher' | 'student'>('student');
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!username || !password) {
-      Swal.fire({
-        icon: 'error',
-        title: 'เกิดข้อผิดพลาด',
-        text: 'กรุณากรอกข้อมูลให้ครบถ้วน',
-      });
+      error('เกิดข้อผิดพลาด', 'กรุณากรอกข้อมูลให้ครบถ้วน');
       return;
     }
 
@@ -42,18 +41,9 @@ export default function LoginPage() {
         const data = await response.json();
 
         if (response.ok) {
-          login(data.user);
+          login(data.user, ''); // ไม่ต้องส่ง token เพราะ server จะตั้งค่า cookie แล้ว
           
-          Swal.fire({
-            icon: 'success',
-            title: 'เข้าสู่ระบบสำเร็จ!',
-            text: `ยินดีต้อนรับ${userType === 'teacher' ? 'ครู' : 'นักเรียน'}`,
-            timer: 2000,
-            showConfirmButton: false,
-            background: '#f0fdf4',
-            color: '#15803d',
-            iconColor: '#10b981',
-          });
+          success('เข้าสู่ระบบสำเร็จ!', `ยินดีต้อนรับ${userType === 'teacher' ? 'ครู' : 'นักเรียน'}`);
 
           // Clear form
           setUsername('');
@@ -71,23 +61,11 @@ export default function LoginPage() {
             }
           }, 1500);
         } else {
-        Swal.fire({
-          icon: 'error',
-          title: 'เข้าสู่ระบบไม่สำเร็จ!',
-          text: 'ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง',
-          background: '#fef2f2',
-          color: '#dc2626',
-          iconColor: '#ef4444',
-          footer: '<a href="#" onclick="window.location.reload()" style="color: #059669; text-decoration: underline;">ลองรีเฟรชหน้าเว็บ</a>',
-        });
+          error('เข้าสู่ระบบไม่สำเร็จ!', 'ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง');
         }
       } catch (error) {
         console.error('Login error:', error);
-        Swal.fire({
-          icon: 'error',
-          title: 'เกิดข้อผิดพลาด',
-          text: 'ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์ได้',
-        });
+        error('เกิดข้อผิดพลาด', 'ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์ได้');
       } finally {
         setLoading(false);
       }
@@ -146,7 +124,10 @@ export default function LoginPage() {
         </div>
 
         {/* Login Form */}
-        <form onSubmit={handleSubmit} className="p-6 space-y-4">
+        <form onSubmit={handleSubmit} className="p-6 space-y-4" autoComplete="off">
+          {/* Hidden fields to prevent browser autofill */}
+          <input type="text" style={{ display: 'none' }} autoComplete="username" />
+          <input type="password" style={{ display: 'none' }} autoComplete="current-password" />
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -158,6 +139,10 @@ export default function LoginPage() {
               onChange={(e) => setUsername(e.target.value)}
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all"
               placeholder="กรอกชื่อผู้ใช้"
+              autoComplete="off"
+              autoCorrect="off"
+              autoCapitalize="off"
+              spellCheck="false"
               required
             />
           </div>
@@ -168,18 +153,23 @@ export default function LoginPage() {
             </label>
             <div className="relative">
               <input
-                type="password"
+                type={showPassword ? 'text' : 'password'}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 className="w-full px-4 py-3 pr-12 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all"
                 placeholder="กรอกรหัสผ่าน"
+                autoComplete="new-password"
+                autoCorrect="off"
+                autoCapitalize="off"
+                spellCheck="false"
                 required
               />
               <button
                 type="button"
+                onClick={() => setShowPassword(!showPassword)}
                 className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
               >
-                <Eye size={20} />
+                {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
               </button>
             </div>
           </div>
@@ -236,35 +226,10 @@ export default function LoginPage() {
           </button>
         </form>
 
-        {/* Quick Access */}
-        <div className="px-6 pb-6">
-          <div className="bg-gray-50 rounded-lg p-4">
-            <p className="text-xs text-gray-600 text-center mb-3">เข้าถึงด่วน:</p>
-            <div className="grid grid-cols-2 gap-2">
-              <button
-                onClick={() => {
-                  setUsername('teacher');
-                  setPassword('teacher123');
-                  setUserType('teacher');
-                }}
-                className="bg-green-500 text-white py-2 px-3 rounded text-xs hover:bg-green-600 transition-colors"
-              >
-                👨‍🏫 ครู
-              </button>
-              <button
-                onClick={() => {
-                  setUsername('student1');
-                  setPassword('student123');
-                  setUserType('student');
-                }}
-                className="bg-blue-500 text-white py-2 px-3 rounded text-xs hover:bg-blue-600 transition-colors"
-              >
-                👨‍🎓 นักเรียน
-              </button>
-            </div>
-          </div>
-        </div>
       </div>
+      
+      {/* Modal Component */}
+      <Modal {...alert} />
     </div>
   );
 }

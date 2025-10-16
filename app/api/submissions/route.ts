@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getDatabase } from '@/lib/mongodb';
 import { ObjectId } from 'mongodb';
 import { Submission, User } from '@/lib/types';
+import { markAssignmentAsSubmitted } from '@/lib/smart-notifications';
 
 // GET all submissions
 export async function GET(request: NextRequest) {
@@ -15,7 +16,7 @@ export async function GET(request: NextRequest) {
 
     if (assignmentId) {
       query.assignmentId = new ObjectId(assignmentId);
-    } else if (studentId) {
+    } else if (studentId && studentId !== 'undefined') {
       query.studentId = new ObjectId(studentId);
     }
 
@@ -95,6 +96,9 @@ export async function POST(request: NextRequest) {
     const result = await db
       .collection<Submission>('submissions')
       .insertOne(newSubmission as Submission);
+
+    // อัพเดทสถานะ notification เมื่อส่งงาน
+    await markAssignmentAsSubmitted(studentId, assignmentId, '');
 
     return NextResponse.json({
       message: 'ส่งงานสำเร็จ',
