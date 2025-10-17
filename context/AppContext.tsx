@@ -6,7 +6,7 @@ import { AuthUser } from '@/lib/types';
 interface AppContextType {
   user: AuthUser | null;
   loading: boolean;
-  login: (user: AuthUser) => void;
+  login: (user: AuthUser, token?: string) => void;
   logout: () => void;
   isAuthenticated: boolean;
 }
@@ -49,7 +49,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     return () => clearTimeout(timer);
   }, []);
 
-  const login = (userData: AuthUser, token: string) => {
+  const login = (userData: AuthUser, token?: string) => {
     setUser(userData);
     // Token จะถูกตั้งค่าเป็น httpOnly cookie โดย server แล้ว
     // ไม่ต้องจัดการ cookie ที่นี่

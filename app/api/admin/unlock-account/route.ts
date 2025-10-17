@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { requireAdmin } from '@/lib/middleware';
 import { unlockAccount, getLockedAccounts } from '@/lib/account-lockout';
 import { validateData, sanitizeInput } from '@/lib/validation';
@@ -67,7 +67,7 @@ export const POST = requireAdmin(async (request) => {
       );
     }
 
-    const { username } = validation.data;
+    const { username } = validation.data as { username: string };
     const adminUserId = request.user.userId;
 
     const result = await unlockAccount(username, adminUserId);

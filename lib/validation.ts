@@ -6,7 +6,7 @@ import { JSDOM } from 'jsdom';
 const window = new JSDOM('').window;
 const purify = DOMPurify(window as any);
 
-export interface ValidationResult<T = any> {
+export interface ValidationResult<T = unknown> {
   isValid: boolean;
   data?: T;
   errors?: string[];
@@ -145,7 +145,7 @@ export const gradeSchema = Joi.object({
 });
 
 // Generic validation function
-export function validateData<T>(schema: Joi.ObjectSchema, data: any): ValidationResult<T> {
+export function validateData<T>(schema: Joi.ObjectSchema, data: unknown): ValidationResult<T> {
   const { error, value } = schema.validate(data, { 
     abortEarly: false,
     stripUnknown: true 
@@ -187,7 +187,7 @@ export function sanitizeFilename(filename: string): string {
 }
 
 // Input sanitization middleware
-export function sanitizeInput(data: any): any {
+export function sanitizeInput(data: unknown): unknown {
   if (typeof data === 'string') {
     return sanitizeText(data);
   }
@@ -197,7 +197,7 @@ export function sanitizeInput(data: any): any {
   }
   
   if (data && typeof data === 'object') {
-    const sanitized: any = {};
+    const sanitized: Record<string, unknown> = {};
     for (const [key, value] of Object.entries(data)) {
       sanitized[sanitizeText(key)] = sanitizeInput(value);
     }

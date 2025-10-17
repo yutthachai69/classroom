@@ -59,6 +59,7 @@ export const securityLogger = winston.createLogger({
 export function logSecurityEvent(event: string, details: any, severity: 'low' | 'medium' | 'high' | 'critical' = 'medium') {
   securityLogger.log({
     level: 'info',
+    message: `Security Event: ${event}`,
     event,
     details,
     severity,

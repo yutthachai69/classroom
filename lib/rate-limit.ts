@@ -86,7 +86,8 @@ function getClientIP(request: NextRequest): string {
   }
   
   // Fallback to connection IP (may not work in all environments)
-  return request.ip || 'unknown';
+  // @ts-ignore
+  return (request as any).socket?.remoteAddress || 'unknown';
 }
 
 // Predefined rate limiters

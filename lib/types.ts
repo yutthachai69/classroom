@@ -11,6 +11,11 @@ export interface User {
   userType: UserType;
   teacherId?: string;
   studentId?: string;
+  email?: string;
+  phoneNumber?: string;
+  englishName?: string;
+  studentNumber?: string;
+  isActive?: boolean;
   // Account lockout fields
   failedLoginAttempts?: number;
   lockedUntil?: Date;

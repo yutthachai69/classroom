@@ -56,7 +56,7 @@ export default function StudentClassList({ userId, onNavigateToAssignments }: St
       const notificationsRes = await fetch('/api/notifications');
       const notificationsData = await notificationsRes.json();
       
-      let statusMap = new Map<string, string>();
+      const statusMap = new Map<string, string>();
       if (notificationsData.success) {
         notificationsData.data.notifications.forEach((notif: any) => {
           statusMap.set(notif.assignmentId, notif.status);

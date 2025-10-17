@@ -156,9 +156,13 @@ export default function GradingStatusTest() {
             </div>
             
             <div className="space-y-2 text-sm">
-              <p><strong>ชื่อ:</strong> {user.firstName} {user.lastName}</p>
-              <p><strong>ประเภท:</strong> {user.userType}</p>
-              <p><strong>ID:</strong> {user.id}</p>
+              {user && (
+                <>
+                  <p><strong>ชื่อ:</strong> {user.firstName} {user.lastName}</p>
+                  <p><strong>ประเภท:</strong> {user.userType}</p>
+                  <p><strong>ID:</strong> {user.id}</p>
+                </>
+              )}
             </div>
           </Card>
 

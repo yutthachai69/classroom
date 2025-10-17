@@ -6,7 +6,6 @@ import { useApp } from '@/context/AppContext';
 import LoadingSpinner from '@/components/common/LoadingSpinner';
 import { BookOpen, FileText, Bell, LogOut, BarChart3, Users } from 'lucide-react';
 import Button from '@/components/common/Button';
-import Card from '@/components/common/Card';
 import Swal from 'sweetalert2';
 import ClassList from '@/components/teacher/ClassList';
 import AssignmentList from '@/components/teacher/AssignmentList';
@@ -205,7 +204,7 @@ export default function TeacherDashboard() {
           <div className="text-center py-12">
             <Users className="h-16 w-16 text-gray-400 mx-auto mb-4" />
             <h3 className="text-lg font-medium text-gray-900 mb-2">เลือกคลาสเพื่อดูรายชื่อนักเรียน</h3>
-            <p className="text-gray-600 mb-4">กรุณาเลือกคลาสจากแท็บ "คลาสเรียน" เพื่อดูรายชื่อนักเรียน</p>
+            <p className="text-gray-600 mb-4">กรุณาเลือกคลาสจากแท็บ &quot;คลาสเรียน&quot; เพื่อดูรายชื่อนักเรียน</p>
             <Button
               variant="primary"
               onClick={() => setActiveTab('classes')}

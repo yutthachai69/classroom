@@ -1,6 +1,6 @@
 import { getDatabase } from './mongodb';
 import { User } from './types';
-import { logAuthEvent } from './logger';
+import { logAuthEvent, logSecurityEvent } from './logger';
 
 export interface AccountLockoutConfig {
   maxFailedAttempts: number; // จำนวนครั้งที่ใส่รหัสผ่านผิดได้
@@ -132,11 +132,11 @@ export async function unlockAccount(username: string, adminUserId: string): Prom
   );
 
   // บันทึก log
-  logAuthEvent('account_unlocked', {
+  logSecurityEvent('account_unlocked', {
     username,
     unlockedBy: adminUserId,
     ip: 'unknown'
-  });
+  }, 'medium');
 
   return { success: true, message: 'ปลดล็อคบัญชีสำเร็จ' };
 }
@@ -155,7 +155,7 @@ export async function getLockedAccounts(): Promise<User[]> {
     failedLoginAttempts: 1,
     lockedUntil: 1,
     lastFailedLogin: 1
-  }).toArray();
+  }).toArray() as User[];
 }
 
 // ฟังก์ชันสำหรับล้างข้อมูล lockout ที่หมดอายุแล้ว (ควรเรียกเป็น scheduled job)

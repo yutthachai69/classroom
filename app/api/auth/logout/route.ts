@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { requireAuth } from '@/lib/middleware';
 import { logAuthEvent } from '@/lib/logger';
 
@@ -9,7 +9,7 @@ export const POST = requireAuth(async (request) => {
       userId: request.user.userId,
       username: request.user.username,
       userType: request.user.userType,
-      ip: request.ip || 'unknown'
+      ip: (request as any).ip || 'unknown'
     });
 
     // Create response

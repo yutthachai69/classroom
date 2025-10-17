@@ -27,7 +27,7 @@ export async function POST(request: NextRequest) {
       logAuthEvent('failed_login', {
         reason: 'validation_failed',
         errors: validation.errors,
-        ip: request.ip || 'unknown'
+        ip: (request as any).ip || 'unknown'
       });
       
       return NextResponse.json(
@@ -36,7 +36,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { username, password, userType } = validation.data;
+    const { username, password, userType } = validation.data as { username: string; password: string; userType: 'admin' | 'teacher' | 'student' };
     
     console.log('Login attempt:', { username, userType });
 
@@ -70,7 +70,7 @@ export async function POST(request: NextRequest) {
         username,
         userType,
         reason: 'user_not_found',
-        ip: request.ip || 'unknown'
+        ip: (request as any).ip || 'unknown'
       });
       
       return NextResponse.json(
@@ -89,7 +89,7 @@ export async function POST(request: NextRequest) {
         username,
         userType,
         reason: 'invalid_password',
-        ip: request.ip || 'unknown'
+        ip: (request as any).ip || 'unknown'
       });
       
       return NextResponse.json(
@@ -109,7 +109,7 @@ export async function POST(request: NextRequest) {
       username,
       userType,
       userId: user._id?.toString(),
-      ip: request.ip || 'unknown'
+      ip: (request as any).ip || 'unknown'
     });
 
     // Return user data without password and token

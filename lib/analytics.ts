@@ -34,6 +34,6 @@ export const event = ({
 // Declare gtag function for TypeScript
 declare global {
   interface Window {
-    gtag: (...args: any[]) => void;
+    gtag: (...args: unknown[]) => void;
   }
 }

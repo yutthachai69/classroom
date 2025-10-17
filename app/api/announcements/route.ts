@@ -11,7 +11,7 @@ export async function GET(request: NextRequest) {
     const teacherId = searchParams.get('teacherId');
 
     const db = await getDatabase();
-    let query: any = {};
+    const query: Record<string, unknown> = {};
 
     if (classId) {
       query.classId = new ObjectId(classId);

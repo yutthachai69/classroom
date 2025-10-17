@@ -25,8 +25,10 @@ export async function markAssignmentAsViewed(
     { _id: new ObjectId(assignmentId) },
     {
       $addToSet: { viewedBy: new ObjectId(studentId) },
-      $set: { lastViewedAt: new Date() },
-      $set: { updatedAt: new Date() }
+      $set: { 
+        lastViewedAt: new Date(),
+        updatedAt: new Date()
+      }
     }
   );
 

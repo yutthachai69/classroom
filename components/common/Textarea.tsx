@@ -68,7 +68,7 @@ export default function Textarea({
           ref={textareaRef}
           className={cn(
             'w-full px-4 py-3 border rounded-lg transition-all duration-300 focus:ring-2 focus:border-transparent outline-none resize-none',
-            icon && 'pl-10',
+            icon ? 'pl-10' : '',
             error && 'border-red-500 focus:ring-red-500 bg-red-50',
             success && 'border-green-500 focus:ring-green-500 bg-green-50',
             !error && !success && 'border-gray-300 focus:ring-blue-500 hover:border-gray-400',

@@ -12,7 +12,7 @@ export async function GET(request: NextRequest) {
     const studentId = searchParams.get('studentId');
 
     const db = await getDatabase();
-    let query: any = {};
+    const query: Record<string, unknown> = {};
 
     if (teacherId) {
       query.teacherId = new ObjectId(teacherId);

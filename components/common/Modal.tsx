@@ -8,7 +8,7 @@ import Button from './Button';
 export interface ModalProps {
   isOpen: boolean;
   onClose: () => void;
-  title: string;
+  title?: string;
   message?: string;
   type?: 'success' | 'error' | 'warning' | 'info' | 'confirm';
   confirmText?: string;

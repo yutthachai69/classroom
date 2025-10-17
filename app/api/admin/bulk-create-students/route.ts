@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getDatabase } from '@/lib/mongodb';
-import { ObjectId } from 'mongodb';
 import { User } from '@/lib/types';
 import { hashPassword } from '@/lib/utils';
 import * as XLSX from 'xlsx';
@@ -72,13 +71,16 @@ export async function POST(request: NextRequest) {
         );
       }
 
-      studentsData = result.data.map((row: any) => ({
-        studentId: String(row['รหัสนักเรียน'] || row['studentId'] || row['รหัส'] || '').trim(),
-        firstName: String(row['ชื่อ'] || row['firstName'] || row['ชื่อจริง'] || '').trim(),
-        lastName: String(row['นามสกุล'] || row['lastName'] || row['สกุล'] || '').trim(),
-        englishName: String(row['ชื่อภาษาอังกฤษ'] || row['englishName'] || row['username'] || '').trim(),
-        studentNumber: String(row['เลขที่'] || row['studentNumber'] || row['ที่'] || '').trim(),
-      }));
+      studentsData = result.data.map((row: unknown) => {
+        const rowData = row as Record<string, unknown>;
+        return {
+        studentId: String(rowData['รหัสนักเรียน'] || rowData['studentId'] || rowData['รหัส'] || '').trim(),
+        firstName: String(rowData['ชื่อ'] || rowData['firstName'] || rowData['ชื่อจริง'] || '').trim(),
+        lastName: String(rowData['นามสกุล'] || rowData['lastName'] || rowData['สกุล'] || '').trim(),
+        englishName: String(rowData['ชื่อภาษาอังกฤษ'] || rowData['englishName'] || rowData['username'] || '').trim(),
+        studentNumber: String(rowData['เลขที่'] || rowData['studentNumber'] || rowData['ที่'] || '').trim(),
+        };
+      });
     } else {
       // ประมวลผลไฟล์ Excel
       const workbook = XLSX.read(buffer, { type: 'array' });
@@ -94,10 +96,10 @@ export async function POST(request: NextRequest) {
       }
 
       const headers = jsonData[0] as string[];
-      const dataRows = jsonData.slice(1) as any[][];
+      const dataRows = jsonData.slice(1) as unknown[][];
 
       studentsData = dataRows.map((row) => {
-        const rowData: any = {};
+        const rowData: Record<string, unknown> = {};
         headers.forEach((header, index) => {
           rowData[header.trim()] = row[index] || '';
         });

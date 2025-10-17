@@ -29,7 +29,7 @@ export default function QRPage() {
     
     try {
       const canvas = document.createElement('canvas');
-      const ctx = canvas.getContext('2d');
+      canvas.getContext('2d');
       
       // Import QRCode dynamically
       const QRCode = (await import('qrcode')).default;

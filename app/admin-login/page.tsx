@@ -3,9 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useApp } from '@/context/AppContext';
-import Button from '@/components/common/Button';
-import Input from '@/components/common/Input';
-import { Shield, LogIn, Eye, EyeOff } from 'lucide-react';
+import { Shield, Eye, EyeOff } from 'lucide-react';
 import { useAlert } from '@/lib/useAlert';
 import Modal from '@/components/common/Modal';
 
@@ -48,8 +46,8 @@ export default function AdminLoginPage() {
       } else {
         error('เกิดข้อผิดพลาด', data.error || 'ไม่สามารถเข้าสู่ระบบได้');
       }
-    } catch (error) {
-      console.error('Login error:', error);
+    } catch (err) {
+      console.error('Login error:', err);
       error('เกิดข้อผิดพลาด', 'ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์ได้');
     } finally {
       setLoading(false);

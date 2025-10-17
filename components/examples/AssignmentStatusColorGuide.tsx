@@ -250,9 +250,9 @@ text-yellow-600`}
               <div className="bg-gray-100 p-4 rounded-lg">
                 <pre className="text-sm text-gray-700">
 {`<span className={\`text-sm font-medium ${
-  isOverdue ? 'text-red-600' : 'text-orange-600'
+  true ? 'text-red-600' : 'text-orange-600'
 }\`}>
-  {isOverdue ? 'หมดเวลาส่งงาน' : 'ยังไม่ส่งงาน'}
+  {true ? 'หมดเวลาส่งงาน' : 'ยังไม่ส่งงาน'}
 </span>`}
                 </pre>
               </div>

@@ -85,7 +85,7 @@ export async function GET(request: NextRequest) {
       const weightedPoints = calculateWeightedPoints(earnedPoints, maxPoints, category.weight);
 
       return {
-        categoryId: category._id,
+        categoryId: category._id!,
         categoryName: category.name,
         earnedPoints,
         maxPoints,

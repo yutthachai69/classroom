@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { getDatabase } from '@/lib/mongodb';
 import { hashPassword, generateStudentId, generateTeacherId } from '@/lib/utils';
 import { User } from '@/lib/types';
@@ -28,7 +28,7 @@ export const GET = requireAdmin(async (request) => {
     }
 
     const db = await getDatabase();
-    const query = userType ? { userType } : {};
+    const query = userType ? { userType: userType as 'admin' | 'teacher' | 'student' } : {};
     
     const users = await db
       .collection<User>('users')
@@ -49,7 +49,7 @@ export const GET = requireAdmin(async (request) => {
     console.error('Get users error:', error);
     logDatabaseEvent('users_retrieve_error', {
       userId: request.user.userId,
-      error: error.message
+      error: error instanceof Error ? error.message : String(error)
     }, 'high');
     
     return NextResponse.json(
@@ -82,7 +82,13 @@ export const POST = requireAdmin(async (request) => {
       );
     }
 
-    const { username, password, firstName, lastName, userType } = validation.data;
+    const { username, password, firstName, lastName, userType } = validation.data as {
+      username: string;
+      password: string;
+      firstName: string;
+      lastName: string;
+      userType: 'admin' | 'teacher' | 'student';
+    };
 
     const db = await getDatabase();
 
@@ -126,7 +132,7 @@ export const POST = requireAdmin(async (request) => {
     console.error('Create user error:', error);
     logDatabaseEvent('user_creation_error', {
       createdBy: request.user.userId,
-      error: error.message
+      error: error instanceof Error ? error.message : String(error)
     }, 'high');
     
     return NextResponse.json(

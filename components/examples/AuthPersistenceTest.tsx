@@ -70,7 +70,7 @@ export default function AuthPersistenceTest() {
                   <p><strong>ชื่อผู้ใช้:</strong> {user.username}</p>
                   <p><strong>ชื่อ:</strong> {user.firstName} {user.lastName}</p>
                   <p><strong>ประเภท:</strong> {user.userType}</p>
-                  <p><strong>ID:</strong> {user._id}</p>
+                  <p><strong>ID:</strong> {user.id}</p>
                 </div>
               )}
             </div>

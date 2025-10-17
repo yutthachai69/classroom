@@ -13,7 +13,7 @@ export async function GET(request: NextRequest) {
     const classId = searchParams.get('classId');
 
     const db = await getDatabase();
-    let query: any = {};
+    const query: Record<string, unknown> = {};
 
     if (assignmentId) {
       query.assignmentId = new ObjectId(assignmentId);
@@ -173,7 +173,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       message: existingGrade ? 'อัปเดตคะแนนสำเร็จ' : 'บันทึกคะแนนสำเร็จ',
-      gradeId: existingGrade ? existingGrade._id : result.insertedId,
+      gradeId: existingGrade ? existingGrade._id : (result as any).insertedId,
     });
   } catch (error) {
     console.error('Save grade error:', error);

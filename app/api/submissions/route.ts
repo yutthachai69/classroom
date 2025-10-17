@@ -12,7 +12,7 @@ export async function GET(request: NextRequest) {
     const studentId = searchParams.get('studentId');
 
     const db = await getDatabase();
-    let query: any = {};
+    const query: Record<string, unknown> = {};
 
     if (assignmentId) {
       query.assignmentId = new ObjectId(assignmentId);
@@ -91,6 +91,7 @@ export async function POST(request: NextRequest) {
       content,
       attachments: attachments || [],
       submittedAt: new Date(),
+      isEdited: false,
     };
 
     const result = await db

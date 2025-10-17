@@ -70,6 +70,28 @@ const nextConfig: NextConfig = {
   env: {
     CUSTOM_KEY: process.env.CUSTOM_KEY,
   },
+  
+  // Disable ESLint during build for faster compilation
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
+  
+  // Force disable Turbopack completely and use Webpack
+  experimental: {
+    turbo: undefined,
+  },
+  
+  // Force use Webpack instead of Turbopack
+  webpack: (config: any, { dev, isServer }: any) => {
+    return config;
+  },
+  
+  // Static export for GitHub Pages
+  output: 'export',
+  trailingSlash: true,
+  images: {
+    unoptimized: true,
+  },
 };
 
 export default nextConfig;

@@ -95,7 +95,7 @@ export function getGradeColor(grade: string): string {
   }
 }
 
-export function validateGradeStructure(categories: any[]): { isValid: boolean; error?: string } {
+export function validateGradeStructure(categories: { weight: number }[]): { isValid: boolean; error?: string } {
   const totalWeight = categories.reduce((sum, cat) => sum + cat.weight, 0);
   
   if (Math.abs(totalWeight - 100) > 0.01) {
@@ -104,10 +104,6 @@ export function validateGradeStructure(categories: any[]): { isValid: boolean; e
   
   if (categories.some(cat => cat.weight <= 0)) {
     return { isValid: false, error: 'น้ำหนักแต่ละหมวดต้องมากกว่า 0%' };
-  }
-  
-  if (categories.some(cat => cat.maxPoints <= 0)) {
-    return { isValid: false, error: 'คะแนนเต็มแต่ละหมวดต้องมากกว่า 0' };
   }
   
   return { isValid: true };

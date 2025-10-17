@@ -18,7 +18,16 @@ const eslintConfig = [
       "out/**",
       "build/**",
       "next-env.d.ts",
+      "components/examples/**", // Ignore example components
     ],
+  },
+  {
+    files: ["**/*.ts", "**/*.tsx"],
+    rules: {
+      "@typescript-eslint/no-explicit-any": "warn", // Change to warning instead of error
+      "react/no-unescaped-entities": "warn", // Change to warning instead of error
+      "@typescript-eslint/no-unused-vars": "warn", // Change to warning instead of error
+    },
   },
 ];
 

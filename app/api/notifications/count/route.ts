@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { requireStudent } from '@/lib/middleware';
 import { getNotificationCount } from '@/lib/smart-notifications';
 import { apiRateLimit } from '@/lib/rate-limit';

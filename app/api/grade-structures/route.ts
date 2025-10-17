@@ -19,7 +19,7 @@ export async function GET(request: NextRequest) {
     }
 
     const db = await getDatabase();
-    let query: any = {};
+    const query: Record<string, unknown> = {};
 
     if (classId) {
       query.classId = new ObjectId(classId);
