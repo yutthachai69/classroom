@@ -59,15 +59,7 @@ export const securityLogger = winston.createLogger({
   ],
 });
 
-// Add console transport for security logger in production
-if (process.env.NODE_ENV === 'production') {
-  securityLogger.add(new winston.transports.Console({
-    format: winston.format.combine(
-      winston.format.colorize(),
-      winston.format.simple()
-    )
-  }));
-}
+// Security logger will use console transport automatically in production
 
 // Log security events
 export function logSecurityEvent(event: string, details: any, severity: 'low' | 'medium' | 'high' | 'critical' = 'medium') {
