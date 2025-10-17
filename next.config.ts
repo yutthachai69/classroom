@@ -85,13 +85,6 @@ const nextConfig: NextConfig = {
   webpack: (config: any, { dev, isServer }: any) => {
     return config;
   },
-  
-  // Static export for GitHub Pages
-  output: 'export',
-  trailingSlash: true,
-  images: {
-    unoptimized: true,
-  },
 };
 
 export default nextConfig;
