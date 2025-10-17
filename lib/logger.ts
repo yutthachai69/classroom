@@ -12,25 +12,36 @@ export const logger = winston.createLogger({
   ),
   defaultMeta: { service: 'workload-tracker' },
   transports: [
-    // Write all logs with importance level of `error` or less to `error.log`
-    new winston.transports.File({ 
-      filename: 'logs/error.log', 
-      level: 'error',
-      maxsize: 5242880, // 5MB
-      maxFiles: 5
-    }),
-    // Write all logs with importance level of `info` or less to `combined.log`
-    new winston.transports.File({ 
-      filename: 'logs/combined.log',
-      maxsize: 5242880, // 5MB
-      maxFiles: 5
-    }),
+    // In production (Vercel), use console transport only
+    ...(process.env.NODE_ENV === 'production' ? [] : [
+      // Write all logs with importance level of `error` or less to `error.log`
+      new winston.transports.File({ 
+        filename: 'logs/error.log', 
+        level: 'error',
+        maxsize: 5242880, // 5MB
+        maxFiles: 5
+      }),
+      // Write all logs with importance level of `info` or less to `combined.log`
+      new winston.transports.File({ 
+        filename: 'logs/combined.log',
+        maxsize: 5242880, // 5MB
+        maxFiles: 5
+      }),
+    ]),
   ],
 });
 
-// If we're not in production, log to the console with a simple format
-if (process.env.NODE_ENV !== 'production') {
-  logger.add(new winston.transports.Console({
+// Add console transport for both development and production
+logger.add(new winston.transports.Console({
+  format: winston.format.combine(
+    winston.format.colorize(),
+    winston.format.simple()
+  )
+}));
+
+// Add console transport for security logger in production
+if (process.env.NODE_ENV === 'production') {
+  securityLogger.add(new winston.transports.Console({
     format: winston.format.combine(
       winston.format.colorize(),
       winston.format.simple()
@@ -47,11 +58,14 @@ export const securityLogger = winston.createLogger({
   ),
   defaultMeta: { service: 'security' },
   transports: [
-    new winston.transports.File({ 
-      filename: 'logs/security.log',
-      maxsize: 5242880, // 5MB
-      maxFiles: 10
-    }),
+    // In production (Vercel), use console transport only
+    ...(process.env.NODE_ENV === 'production' ? [] : [
+      new winston.transports.File({ 
+        filename: 'logs/security.log',
+        maxsize: 5242880, // 5MB
+        maxFiles: 10
+      }),
+    ]),
   ],
 });
 
