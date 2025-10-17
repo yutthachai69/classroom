@@ -39,16 +39,6 @@ logger.add(new winston.transports.Console({
   )
 }));
 
-// Add console transport for security logger in production
-if (process.env.NODE_ENV === 'production') {
-  securityLogger.add(new winston.transports.Console({
-    format: winston.format.combine(
-      winston.format.colorize(),
-      winston.format.simple()
-    )
-  }));
-}
-
 // Security event logger
 export const securityLogger = winston.createLogger({
   level: 'info',
@@ -68,6 +58,16 @@ export const securityLogger = winston.createLogger({
     ]),
   ],
 });
+
+// Add console transport for security logger in production
+if (process.env.NODE_ENV === 'production') {
+  securityLogger.add(new winston.transports.Console({
+    format: winston.format.combine(
+      winston.format.colorize(),
+      winston.format.simple()
+    )
+  }));
+}
 
 // Log security events
 export function logSecurityEvent(event: string, details: any, severity: 'low' | 'medium' | 'high' | 'critical' = 'medium') {
